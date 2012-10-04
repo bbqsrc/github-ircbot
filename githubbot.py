@@ -41,7 +41,7 @@ def format_message(payload, commit):
     o['repo'] = payload['repository']['name']
     o['rev'] = commit['id'][:8]
     o['file_count'] = len(files)
-    o['dir_count'] = len(c)
+    o['dir_count'] = len(c)+1
     o['msg'] = commit['message']
 
     response = requests.post("http://git.io", data={"url": commit['url']})
