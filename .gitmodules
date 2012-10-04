@@ -1,0 +1,3 @@
+[submodule "lurklib"]
+	path = lurklib
+	url = git://github.com/LK-/lurklib.git
