@@ -7,6 +7,7 @@ NICKS = ("gitbot", "gitbot-", "gitbot`")
 import lurklib
 import json
 import threading
+import requests
 from bottle import abort, request, app, static_file, run
 
 
@@ -42,8 +43,13 @@ def format_message(payload, commit):
     o['file_count'] = len(files)
     o['dir_count'] = len(c)
     o['msg'] = commit['message']
-    o['url'] = commit['url']
-    
+
+    response = requests.post("http://git.io", data={"url": commit['url']})
+    if response.status_code in (201, 302) and response.headers['location']:
+        o['url'] = response.headers['location']
+    else:
+        o['url'] = commit['url']
+
     return "{repo}: {author} {branch} * {rev} / ({file_count} files in {dir_count} dirs): {msg} - {url}".format(**o)
 
 
