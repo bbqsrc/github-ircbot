@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 
-SERVER = 'irc.pirateirc.net'
-CHANNELS = ["#ppau-pwg"]
-NICKS = ("gitbot", "gitbot-", "gitbot`")
-
 import lurklib
 import json
 import threading
 import requests
 from bottle import abort, request, app, static_file, run
+
+
+CONFIG = json.load(open('config.json'))
+SERVER = CONFIG.get('server')
+CHANNELS = CONFIG.get('channels')
+NICKS = CONFIG.get('nicks') 
+ALLOWED_IPS = CONFIG.get('allowed_ips')
+DEBUG = CONFIG.get('debug', False)
 
 
 class GithubBot(lurklib.Client, threading.Thread):
@@ -26,6 +30,15 @@ class GithubBot(lurklib.Client, threading.Thread):
 
 bot = GithubBot(server=SERVER, nick=NICKS)
 app = app()
+
+
+def get_client_ip():
+    x_forwarded_for = request.environ.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.environ.get('REMOTE_ADDR')
+    return ip
 
 
 def format_message(payload, commit):
@@ -56,10 +69,11 @@ def format_message(payload, commit):
 @app.post('/')
 def github_post():
     payload = json.loads(request.forms.get('payload', {}))
-    if payload == {}:
+    if get_client_ip() not in ALLOWED_IPS or payload == {}:
         return "Go away!"
 
-    print(payload)
+    if DEBUG:
+        print(payload)
 
     for commit in payload['commits']:
         msg = format_message(payload, commit)
