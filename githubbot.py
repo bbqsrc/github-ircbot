@@ -29,7 +29,8 @@ app = app()
 
 def format_message(payload, commit):
     c = set()
-    for fn in commit.get('added',[]):
+    files = commit.get('added', []) + commit.get('modified', [])
+    for fn in ():
         if '/' in fn:
             c.add(fn.rsplit('/', 1))
     
@@ -38,7 +39,7 @@ def format_message(payload, commit):
     o['author'] = commit['author']['name']
     o['repo'] = payload['repository']['name']
     o['rev'] = commit['id'][:8]
-    o['file_count'] = len(commit.get('added', []))
+    o['file_count'] = len(files)
     o['dir_count'] = len(c)
     o['msg'] = commit['message']
     o['url'] = commit['url']
