@@ -6,4 +6,5 @@ CIA.vc is dead. This'll do.
 
 - Bottle
 - lurklib
-
+- requests
+- cherrypy (or change server target)
