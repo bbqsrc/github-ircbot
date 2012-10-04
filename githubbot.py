@@ -48,7 +48,11 @@ def format_message(payload, commit):
 
 @app.post('/')
 def github_post():
-    payload = json.loads(request.forms.get('payload'))
+    payload = json.loads(request.forms.get('payload', {}))
+    if payload == {}:
+        return "Go away!"
+
+    print(payload)
 
     for commit in payload['commits']:
         msg = format_message(payload, commit)
