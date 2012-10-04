@@ -30,7 +30,7 @@ app = app()
 
 def format_message(payload, commit):
     c = set()
-    files = commit.get('added', []) + commit.get('modified', [])
+    files = commit.get('added', []) + commit.get('modified', []) + commit.get('removed', [])
     for fn in ():
         if '/' in fn:
             c.add(fn.rsplit('/', 1))
