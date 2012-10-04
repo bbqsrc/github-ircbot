@@ -10,7 +10,7 @@ from bottle import abort, request, app, static_file, run
 CONFIG = json.load(open('config.json'))
 SERVER = CONFIG.get('server')
 CHANNELS = CONFIG.get('channels')
-NICKS = CONFIG.get('nicks') 
+NICKS = tuple(CONFIG.get('nicks'))
 ALLOWED_IPS = CONFIG.get('allowed_ips')
 DEBUG = CONFIG.get('debug', False)
 
