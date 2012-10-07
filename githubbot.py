@@ -3,7 +3,8 @@
 import lurklib
 import json
 import requests
-from multiprocessing import Process, Queue
+from threading import Thread
+from queue import Queue
 from bottle import abort, request, app, static_file, run
 
 
@@ -15,10 +16,10 @@ ALLOWED_IPS = CONFIG.get('allowed_ips')
 DEBUG = CONFIG.get('debug', False)
 
 
-class GithubBot(lurklib.Client, Process):
+class GithubBot(lurklib.Client, Thread):
     def __init__(self, *args, **kwargs):
         lurklib.Client.__init__(self, *args, **kwargs)
-        Process.__init__(self)
+        Thread.__init__(self)
         self.q = Queue()
     
     def mainloop(self):
@@ -32,13 +33,12 @@ class GithubBot(lurklib.Client, Process):
                     break
                 
                 try:
-                    while True:
-                        msg = self.q.get(False)
-                        for channel in CHANNELS:
-                            self.privmsg(channel, msg)
+                    msg = self.q.get(False)
+                    for channel in CHANNELS:
+                        self.privmsg(channel, msg)
                 except Exception as e:
-                    print(e)
-                
+                    pass
+
                 self.process_once()
 
     def on_connect(self):
