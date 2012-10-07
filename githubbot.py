@@ -2,8 +2,8 @@
 
 import lurklib
 import json
-import threading
 import requests
+from multiprocessing import Process, Queue
 from bottle import abort, request, app, static_file, run
 
 
@@ -15,10 +15,31 @@ ALLOWED_IPS = CONFIG.get('allowed_ips')
 DEBUG = CONFIG.get('debug', False)
 
 
-class GithubBot(lurklib.Client, threading.Thread):
+class GithubBot(lurklib.Client, Process):
     def __init__(self, *args, **kwargs):
         lurklib.Client.__init__(self, *args, **kwargs)
-        threading.Thread.__init__(self)
+        Process.__init__(self)
+        self.q = Queue()
+    
+    def mainloop(self):
+        while self.keep_going:
+            with self.lock:
+                if self.on_connect and not self.readable(2):
+                    self.on_connect()
+                    self.on_connect = None
+                
+                if not self.keep_going:
+                    break
+                
+                try:
+                    while True:
+                        msg = self.q.get(False)
+                        for channel in CHANNELS:
+                            self.privmsg(channel, msg)
+                except:
+                    pass
+                
+                self.process_once()
 
     def on_connect(self):
         for channel in CHANNELS:
@@ -77,9 +98,7 @@ def github_post():
 
     for commit in payload['commits']:
         msg = format_message(payload, commit)
-        for channel in CHANNELS:
-            bot.privmsg(channel, msg)
-
+        bot.q.put(msg)
 
 if __name__ == '__main__':
     bot.start()
