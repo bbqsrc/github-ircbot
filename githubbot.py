@@ -36,8 +36,8 @@ class GithubBot(lurklib.Client, Process):
                         msg = self.q.get(False)
                         for channel in CHANNELS:
                             self.privmsg(channel, msg)
-                except:
-                    pass
+                except Exception as e:
+                    print(e)
                 
                 self.process_once()
 
